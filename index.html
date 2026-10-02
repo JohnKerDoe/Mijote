@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3F4EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141A16" media="(prefers-color-scheme: dark)">
+<title>Mijote</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icone-192.png">
+<link rel="apple-touch-icon" href="icone-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Young+Serif&display=swap" rel="stylesheet">
+<style>
+:root{
+  --fond:#F3F4EF; --surface:#FFFFFF; --encre:#1F2A24; --doux:#5E6B62; --trait:#D5DBCF;
+  --basilic:#3F6B33; --basilic-clair:#E3EBDC; --safran:#C98A0B; --safran-fond:#FBEFD2; --danger:#A33A2A;
+  --titre:"Young Serif", Georgia, "Times New Roman", serif;
+  --texte:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --h-min:0px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --fond:#141A16; --surface:#1D2520; --encre:#E6ECE2; --doux:#9AA79E; --trait:#2F3A33;
+    --basilic:#8DBF72; --basilic-clair:#202B1C; --safran:#F0B940; --safran-fond:#3A2F12; --danger:#E07A66;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0}
+body{
+  background:var(--fond); color:var(--encre); font:17px/1.5 var(--texte);
+  -webkit-tap-highlight-color:transparent;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+main{max-width:680px; margin:0 auto; padding:14px 18px 140px}
+h1,h2{font-family:var(--titre); font-weight:400; letter-spacing:-.01em; margin:0}
+h1{font-size:2.1rem; line-height:1.12}
+h2{font-size:1.35rem; margin:32px 0 8px}
+a{color:var(--basilic)}
+button,input,textarea,select{font:inherit; color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--safran); outline-offset:2px}
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  border:0; border-radius:999px; padding:12px 22px; min-height:48px;
+  background:var(--basilic); color:var(--fond); font-weight:700; text-decoration:none;
+}
+.btn.second{background:transparent; color:var(--encre); border:1.5px solid var(--trait)}
+.btn.danger{background:transparent; color:var(--danger); border:1.5px solid currentColor}
+.btn.petit{min-height:40px; padding:8px 16px; font-size:.95rem}
+.btn.large{width:100%; min-height:58px; font-size:1.15rem; margin-top:20px}
+.btn:disabled{opacity:.35}
+.icone{
+  width:44px; height:44px; flex:none; border:0; background:transparent; border-radius:50%;
+  display:inline-grid; place-items:center; font-size:1.35rem; color:inherit; text-decoration:none;
+}
+.barre{display:flex; align-items:center; gap:8px; margin-bottom:10px}
+.esp{flex:1; min-width:0}
+.meta{color:var(--doux); font-size:.93rem; margin:4px 0 0}
+.etat{color:var(--doux); font-size:.85rem; margin:0 0 10px; min-height:1.3em}
+
+/* Liste */
+.recherche{width:100%; padding:13px 16px; border-radius:14px; border:1.5px solid var(--trait); background:var(--surface)}
+.puces{display:flex; gap:8px; overflow-x:auto; padding:12px 0 2px; scrollbar-width:none}
+.puces::-webkit-scrollbar{display:none}
+.puce{
+  flex:none; border:1.5px solid var(--trait); background:transparent; border-radius:999px;
+  padding:5px 14px; font-size:.93rem; text-decoration:none; color:inherit;
+}
+.puce[aria-pressed="true"]{background:var(--encre); color:var(--fond); border-color:var(--encre)}
+.lettre{font-family:var(--titre); font-size:1.5rem; color:var(--basilic); margin:26px 0 0; padding-bottom:2px; border-bottom:2px solid var(--basilic)}
+.liste{list-style:none; margin:0; padding:0}
+.liste a{display:block; padding:15px 2px; border-bottom:1px solid var(--trait); color:inherit; text-decoration:none}
+.liste .t{font-family:var(--titre); font-size:1.22rem; line-height:1.25}
+.vide{padding:40px 4px; color:var(--doux); max-width:34ch}
+.vide p{margin:0 0 18px}
+.ajouter{
+  position:fixed; right:18px; z-index:10;
+  bottom:calc(18px + var(--h-min) + env(safe-area-inset-bottom,0px));
+  box-shadow:0 8px 24px rgba(31,42,36,.28);
+}
+
+/* Fiche recette */
+.tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+.entete-ingr{display:flex; align-items:flex-end; justify-content:space-between; gap:8px}
+.portions{display:flex; align-items:center; border:1.5px solid var(--trait); border-radius:999px; margin-bottom:6px}
+.portions span{min-width:5.5ch; text-align:center; font-size:.95rem}
+.ingr{list-style:none; padding:0; margin:0}
+.ingr li{padding:9px 0; border-bottom:1px dashed var(--trait)}
+.ingr li b{color:var(--basilic)}
+.ingr li.sous{font-family:var(--titre); color:var(--basilic); border:0; padding:18px 0 2px}
+.etapes{list-style:none; padding:0; margin:0; counter-reset:e}
+.etapes li{counter-increment:e; display:grid; grid-template-columns:2.1rem 1fr; gap:6px; margin:0 0 18px}
+.etapes li::before{content:counter(e); font-family:var(--titre); color:var(--safran); font-size:1.45rem; line-height:1.05}
+.chrono{
+  display:inline; border:0; border-radius:8px; padding:1px 8px; margin:0 1px;
+  background:var(--safran-fond); color:var(--encre); font-weight:700; font-size:inherit; line-height:inherit;
+}
+.notes{list-style:none; padding:0; margin:0 0 12px}
+.notes li{padding:12px 0; border-bottom:1px solid var(--trait); display:flex; gap:8px; align-items:flex-start}
+.notes .d{color:var(--doux); font-size:.85rem}
+.notes p{margin:2px 0 0; white-space:pre-wrap}
+
+/* Formulaires */
+label{display:block; margin:16px 0 0; font-weight:700; font-size:.95rem}
+label input, label textarea, label select{
+  display:block; width:100%; margin-top:6px; padding:12px 14px;
+  border:1.5px solid var(--trait); border-radius:12px; background:var(--surface); font-weight:400; font-size:1rem;
+}
+textarea{resize:vertical; line-height:1.5}
+.aide{font-weight:400; color:var(--doux)}
+.ligne3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; align-items:end}
+.ligne3 label{font-size:.85rem}
+.actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:24px}
+.capture{margin:8px 0 6px; padding:16px; border:1.5px dashed var(--basilic); border-radius:18px; background:var(--basilic-clair)}
+.capture .btn{width:100%; margin:0; cursor:pointer}
+.capture .meta{margin-top:10px}
+.occupe{pointer-events:none; opacity:.6}
+.occupe::after{content:""; width:16px; height:16px; border:2.5px solid currentColor; border-right-color:transparent; border-radius:50%; animation:tourne .8s linear infinite}
+@keyframes tourne{to{transform:rotate(1turn)}}
+#note{display:block; width:100%; padding:12px 14px; border:1.5px solid var(--trait); border-radius:12px; background:var(--surface); margin-bottom:10px}
+
+/* Mode cuisine */
+.cuisine{
+  position:fixed; inset:0; z-index:20; background:var(--fond); display:flex; flex-direction:column;
+  padding:calc(8px + env(safe-area-inset-top,0px)) 18px calc(14px + env(safe-area-inset-bottom,0px));
+}
+.cuisine > *{width:100%; max-width:720px; margin-left:auto; margin-right:auto}
+.prog{color:var(--doux); font-size:.95rem; text-align:center}
+.segments{display:flex; gap:4px}
+.segments i{flex:1; height:4px; border-radius:2px; background:var(--trait)}
+.segments i.fait{background:var(--basilic)}
+.scene{flex:1; overflow-y:auto; padding:26px 0 calc(16px + var(--h-min))}
+.num{font-family:var(--titre); font-size:clamp(4.5rem,20vw,7.5rem); color:var(--safran); line-height:.9}
+.grand{font-size:clamp(1.4rem,5.4vw,2rem); line-height:1.45; margin:16px 0 0}
+.nav-cuisine{display:grid; grid-template-columns:1fr 1.7fr; gap:10px}
+.nav-cuisine .btn{min-height:62px; font-size:1.1rem}
+.tiroir{
+  position:fixed; left:0; right:0; bottom:0; z-index:25; max-height:78vh; overflow:auto;
+  max-width:720px; margin:0 auto; background:var(--surface); border-radius:22px 22px 0 0;
+  padding:14px 18px calc(18px + env(safe-area-inset-bottom,0px)); box-shadow:0 -12px 32px rgba(0,0,0,.22);
+}
+.tiroir h2{margin:0}
+.tiroir li{cursor:pointer}
+.tiroir li.coche{text-decoration:line-through; opacity:.45}
+
+/* Minuteurs */
+#minuteurs{
+  position:fixed; left:12px; right:12px; z-index:30; max-width:520px; margin:0 auto;
+  bottom:calc(12px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:8px;
+}
+body.mode-cuisine #minuteurs{bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+.min{
+  display:flex; align-items:center; gap:6px; background:var(--encre); color:var(--fond);
+  border-radius:16px; padding:5px 5px 5px 16px; box-shadow:0 6px 20px rgba(0,0,0,.22);
+}
+.min .lab{flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:.9rem}
+.min time{font-weight:700; font-size:1.3rem; font-variant-numeric:tabular-nums}
+.min .icone{width:42px; height:42px; font-size:.95rem; font-weight:700}
+.min.fini{background:var(--safran); color:#1F2A24; animation:pulsar .9s ease-in-out infinite alternate}
+@keyframes pulsar{to{transform:scale(1.025)}}
+
+#toast{
+  position:fixed; left:50%; top:calc(12px + env(safe-area-inset-top,0px)); z-index:40;
+  transform:translate(-50%,-160%); transition:transform .25s ease;
+  background:var(--encre); color:var(--fond); padding:10px 18px; border-radius:12px; max-width:90vw;
+}
+#toast.vu{transform:translate(-50%,0)}
+@media (prefers-reduced-motion: reduce){
+  .min.fini{animation:none} #toast{transition:none} .occupe::after{animation-duration:2.4s}
+}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div id="minuteurs" aria-live="polite"></div>
+<div id="toast" role="status"></div>
+
+<script>
+'use strict';
+
+/* ---------- Outils ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+function toast(msg, ms = 2800) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('vu');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('vu'), ms);
+}
+function duree(min) {
+  min = Math.round(min);
+  if (min < 60) return min + ' min';
+  const h = Math.floor(min / 60), m = min % 60;
+  return h + ' h' + (m ? ' ' + String(m).padStart(2, '0') : '');
+}
+
+/* ---------- Données ---------- */
+let data = LS.get('mijote.data', { recettes: [], supprimes: [] });
+let cfg = Object.assign({ owner: 'JohnKerDoe', repo: 'recettes-data', token: '', gemini: '', modeleGemini: 'gemini-flash-latest' }, LS.get('mijote.cfg', {}));
+let sha = LS.get('mijote.sha', null);
+let filtre = { q: '', tag: null };
+const portionsVues = {};
+const etapeVue = {};
+const cochesVue = {};
+let fichiersPartages = null;
+let etatSynchro = '';
+let navInterne = false;
+let scrollListe = 0;
+
+const sauverLocal = () => LS.set('mijote.data', data);
+const recette = id => data.recettes.find(r => r.id === id);
+
+function enregistrer(r) {
+  r.modifieLe = Date.now();
+  const i = data.recettes.findIndex(x => x.id === r.id);
+  if (i >= 0) data.recettes[i] = r; else data.recettes.push(r);
+  sauverLocal(); synchro();
+}
+
+/* ---------- Synchro GitHub (dépôt privé, fichier recettes.json) ---------- */
+function b64enc(s) {
+  const b = new TextEncoder().encode(s); let bin = '';
+  for (let i = 0; i < b.length; i += 0x8000) bin += String.fromCharCode(...b.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+const b64dec = b => new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\n/g, '')), c => c.charCodeAt(0)));
+const gh = (method, body) => fetch(
+  `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/recettes.json`,
+  { method, cache: 'no-store', body: body ? JSON.stringify(body) : undefined,
+    headers: { Authorization: 'Bearer ' + cfg.token, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } }
+);
+function fusion(a, b) {
+  const sup = new Set([...(a.supprimes || []), ...(b.supprimes || [])]);
+  const m = new Map();
+  for (const r of [...(a.recettes || []), ...(b.recettes || [])]) {
+    if (sup.has(r.id)) continue;
+    const x = m.get(r.id);
+    if (!x || (r.modifieLe || 0) > (x.modifieLe || 0)) m.set(r.id, r);
+  }
+  return { recettes: [...m.values()], supprimes: [...sup] };
+}
+const canon = d => JSON.stringify({
+  r: [...(d.recettes || [])].sort((x, y) => x.id < y.id ? -1 : 1),
+  s: [...(d.supprimes || [])].sort()
+});
+
+let synchroEnCours = null, synchroRelance = false;
+function synchro() {
+  if (!cfg.token) { majEtat(); return Promise.resolve(); }
+  if (synchroEnCours) { synchroRelance = true; return synchroEnCours; }
+  synchroEnCours = (async () => {
+    try {
+      for (let essai = 0; essai < 3; essai++) {
+        let distant = { recettes: [], supprimes: [] };
+        const r = await gh('GET');
+        if (r.status === 404) sha = null;
+        else if (r.status === 401) throw new Error('Jeton GitHub refusé : vérifie-le dans les réglages');
+        else if (!r.ok) throw new Error('GitHub a répondu ' + r.status);
+        else { const j = await r.json(); sha = j.sha; distant = JSON.parse(b64dec(j.content) || '{}'); }
+        const avant = canon(data);
+        data = fusion(data, distant); sauverLocal();
+        if (r.status === 404 || canon(data) !== canon(distant)) {
+          const p = await gh('PUT', { message: 'Mise à jour des recettes', content: b64enc(JSON.stringify(data, null, 1)), ...(sha ? { sha } : {}) });
+          if (p.status === 409 || p.status === 422) continue;
+          if (p.status === 404) throw new Error('Dépôt introuvable : vérifie son nom et les droits du jeton');
+          if (!p.ok) throw new Error('Enregistrement sur GitHub impossible (' + p.status + ')');
+          sha = (await p.json()).content.sha;
+        }
+        LS.set('mijote.sha', sha);
+        etatSynchro = 'Synchronisé avec GitHub';
+        if (avant !== canon(data) && !/^#\/(edit|nouvelle)/.test(location.hash)) rendre();
+        return;
+      }
+      throw new Error('Conflit de synchronisation, nouvel essai plus tard');
+    } catch (e) {
+      etatSynchro = navigator.onLine === false ? 'Hors ligne : tes modifications sont gardées sur le téléphone' : e.message;
+    } finally {
+      synchroEnCours = null; majEtat();
+      if (synchroRelance) { synchroRelance = false; synchro(); }
+    }
+  })();
+  return synchroEnCours;
+}
+function majEtat() {
+  const e = $('#etat'); if (!e) return;
+  e.innerHTML = cfg.token ? esc(etatSynchro) : 'Recettes gardées sur ce téléphone seulement. <a href="#/reglages">Configurer la sauvegarde GitHub</a>';
+}
+
+/* ---------- Quantités et portions ---------- */
+const FRAC = { '½': .5, '¼': .25, '¾': .75, '⅓': 1/3, '⅔': 2/3, '⅛': .125 };
+const RE_QTE = /^(\s*)(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:[.,]\d+)?(?:\s?[½¼¾⅓⅔])?|[½¼¾⅓⅔⅛])(?:\s*(?:-|à)\s*(\d+(?:[.,]\d+)?))?/;
+function valeur(t) {
+  t = t.trim(); let m;
+  if ((m = t.match(/^(\d+)\s+(\d+)\/(\d+)$/))) return +m[1] + m[2] / m[3];
+  if ((m = t.match(/^(\d+)\/(\d+)$/))) return m[1] / m[2];
+  if (FRAC[t] != null) return FRAC[t];
+  if ((m = t.match(/^(\d+(?:[.,]\d+)?)\s?([½¼¾⅓⅔])?$/))) return parseFloat(m[1].replace(',', '.')) + (m[2] ? FRAC[m[2]] : 0);
+  return null;
+}
+function formater(n) {
+  if (n >= 10) return String(Math.round(n));
+  const q = Math.round(n * 4) / 4;
+  if (q > 0 && Math.abs(q - n) < 0.04) {
+    const e = Math.floor(q), f = q - e;
+    return (e ? String(e) : '') + ({ 0: '', 0.25: '¼', 0.5: '½', 0.75: '¾' })[f];
+  }
+  return String(Math.round(n * 10) / 10).replace('.', ',');
+}
+function ingrHTML(l, ratio) {
+  if (/:\s*$/.test(l)) return `<li class="sous">${esc(l)}</li>`;
+  const m = l.match(RE_QTE), v = m && valeur(m[2]);
+  if (!m || v == null) return `<li>${esc(l)}</li>`;
+  let q = ratio === 1 ? m[2] : formater(v * ratio);
+  if (m[3]) q += '-' + (ratio === 1 ? m[3] : formater(parseFloat(m[3].replace(',', '.')) * ratio));
+  return `<li><b>${esc(q)}</b>${esc(l.slice(m[0].length))}</li>`;
+}
+const ratioDe = r => (r.portions && portionsVues[r.id]) ? portionsVues[r.id] / r.portions : 1;
+
+/* ---------- Temps repérés dans les étapes ---------- */
+const RE_T = /(\d+)\s*h\s*(\d{2})\b|(\d+(?:[.,]\d+)?)(?:\s*(?:à|-)\s*\d+(?:[.,]\d+)?)?\s*(heures?|h|minutes?|min|mn|secondes?|sec)\b/gi;
+function etapeHTML(t) {
+  let out = '', i = 0;
+  for (const m of t.matchAll(RE_T)) {
+    let s;
+    if (m[1]) s = m[1] * 3600 + m[2] * 60;
+    else {
+      const n = parseFloat(m[3].replace(',', '.')), u = m[4].toLowerCase();
+      s = Math.round(n * (u[0] === 'h' ? 3600 : u[0] === 's' ? 1 : 60));
+    }
+    if (!s) continue;
+    out += esc(t.slice(i, m.index)) + `<button class="chrono" data-s="${s}" data-l="${esc(m[0])}" aria-label="Lancer un minuteur de ${esc(m[0])}">⏱ ${esc(m[0])}</button>`;
+    i = m.index + m[0].length;
+  }
+  return out + esc(t.slice(i));
+}
+
+/* ---------- Minuteurs ---------- */
+let minuteurs = LS.get('mijote.min', []);
+let audio = null;
+const sauverMin = () => LS.set('mijote.min', minuteurs);
+function fmtChrono(s) {
+  s = Math.max(0, Math.ceil(s));
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0');
+}
+function lancerMinuteur(s, label) {
+  try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) {}
+  if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+  minuteurs.push({ id: uid(), label, fin: Date.now() + s * 1000 });
+  sauverMin(); majMinuteurs();
+  toast('Minuteur lancé : ' + fmtChrono(s));
+}
+function majMinuteurs() {
+  document.body.style.setProperty('--h-min', (minuteurs.length * 60) + 'px');
+  $('#minuteurs').innerHTML = minuteurs.map(t => {
+    const fini = t.fin <= Date.now();
+    return `<div class="min${fini ? ' fini' : ''}" data-id="${t.id}">
+      <span class="lab">${esc(t.label)}</span><time>${fini ? 'Terminé' : fmtChrono((t.fin - Date.now()) / 1000)}</time>
+      ${fini ? '' : '<button class="icone" data-plus aria-label="Ajouter une minute">+1</button>'}
+      <button class="icone" data-stop aria-label="${fini ? 'Arrêter' : 'Annuler'} le minuteur">✕</button></div>`;
+  }).join('');
+}
+function bip() {
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = audio.currentTime;
+    for (let k = 0; k < 3; k++) {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.frequency.value = 880; o.connect(g); g.connect(audio.destination);
+      const d = t0 + k * 0.4;
+      g.gain.setValueAtTime(0.0001, d);
+      g.gain.exponentialRampToValueAtTime(0.4, d + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, d + 0.3);
+      o.start(d); o.stop(d + 0.32);
+    }
+  } catch (e) {}
+  navigator.vibrate?.([300, 150, 300, 150, 300]);
+}
+setInterval(() => {
+  if (!minuteurs.length) return;
+  const now = Date.now(); let refaire = false;
+  for (const t of minuteurs) {
+    if (t.fin > now) continue;
+    if (!t.fini) {
+      t.fini = true; refaire = true; sauverMin();
+      if ('Notification' in window && Notification.permission === 'granted') {
+        navigator.serviceWorker?.ready.then(reg => reg.showNotification('Minuteur terminé', { body: t.label, tag: t.id, icon: 'icone-192.png', vibrate: [300, 150, 300], requireInteraction: true })).catch(() => {});
+      }
+    }
+    if (now - t.fin < 120000 && now - (t.dernierBip || 0) > 4000) { t.dernierBip = now; bip(); }
+  }
+  if (refaire) { majMinuteurs(); return; }
+  document.querySelectorAll('#minuteurs .min').forEach(el => {
+    const t = minuteurs.find(x => x.id === el.dataset.id);
+    if (t && !t.fini) $('time', el).textContent = fmtChrono((t.fin - now) / 1000);
+  });
+}, 500);
+
+/* ---------- Écran allumé en mode cuisine ---------- */
+let verrou = null;
+async function garderEcran() { try { verrou = await navigator.wakeLock?.request('screen'); } catch (e) {} }
+function lacherEcran() { verrou?.release().catch(() => {}); verrou = null; }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (document.body.classList.contains('mode-cuisine')) garderEcran();
+  synchro();
+});
+
+/* ---------- Lecture des captures par Gemini ---------- */
+const CONSIGNE = `Ces captures d'écran montrent une même recette, parfois sur plusieurs images qui se suivent ou se chevauchent. Extrais-la fidèlement, en français.
+Réponds uniquement avec un objet JSON, sans aucun texte autour, de cette forme :
+{"titre":"","portions":4,"tempsPrep":15,"tempsCuisson":30,"ingredients":["200 g de farine"],"etapes":["..."],"tags":["dessert"],"source":null}
+Règles :
+- une entrée par ingrédient, la quantité en chiffres au début quand il y en a une (« 2 oeufs », pas « deux oeufs ») ; si la recette a des sous-parties, ajoute une entrée titre qui finit par « : » (« Pour la sauce : ») ;
+- une entrée par étape, sans numéro, avec les temps de cuisson écrits en chiffres (« 20 min ») ;
+- temps en minutes, portions en nombre, ou null si absent ;
+- 1 à 4 tags courts en minuscules (type de plat, ingrédient principal) ;
+- source : nom du site, du compte ou du livre s'il est visible, sinon null ;
+- supprime les doublons dus au chevauchement des captures ;
+- n'invente rien qui ne figure pas sur les images.`;
+
+async function decouper(file) {
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(1, 1092 / bmp.width);
+  const w = Math.round(bmp.width * k), h = Math.round(bmp.height * k);
+  const morceaux = [];
+  for (let y = 0; y < h; y += 1500) {
+    const hh = Math.min(1568, h - y);
+    const c = document.createElement('canvas'); c.width = w; c.height = hh;
+    c.getContext('2d').drawImage(bmp, 0, y / k, bmp.width, hh / k, 0, 0, w, hh);
+    morceaux.push(c.toDataURL('image/jpeg', 0.85).split(',')[1]);
+    if (y + hh >= h) break;
+  }
+  bmp.close?.();
+  return morceaux;
+}
+async function extraireRecette(files) {
+  let imgs = [];
+  for (const f of files) imgs.push(...await decouper(f));
+  imgs = imgs.slice(0, 20);
+  const parts = [...imgs.map(d => ({ inline_data: { mime_type: 'image/jpeg', data: d } })), { text: CONSIGNE }];
+  const modele = (cfg.modeleGemini || 'gemini-flash-latest').replace(/^models\//, '');
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modele)}:generateContent`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-goog-api-key': cfg.gemini },
+    body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig: { responseMimeType: 'application/json', temperature: 0.1 } })
+  });
+  const j = await r.json().catch(() => ({}));
+  const msg = j.error?.message || '';
+  if (r.status === 400 && /api key/i.test(msg) || r.status === 403) throw new Error('Clé Gemini refusée : vérifie-la dans les réglages');
+  if (r.status === 404) throw new Error(`Modèle « ${modele} » introuvable : change-le dans les réglages`);
+  if (r.status === 429) throw new Error('Quota gratuit de Gemini atteint : réessaie dans une minute (ou demain si c\'est la limite du jour)');
+  if (!r.ok) throw new Error('Gemini : ' + (msg || 'erreur ' + r.status));
+  const cand = j.candidates?.[0];
+  if (!cand) throw new Error('Gemini n\'a rien renvoyé' + (j.promptFeedback?.blockReason ? ' (contenu bloqué)' : ''));
+  const txt = (cand.content?.parts || []).map(p => p.thought ? '' : (p.text || '')).join('');
+  const m = txt.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('Aucune recette repérée sur ces captures');
+  return JSON.parse(m[0]);
+}
+async function preRemplir(files) {
+  const st = $('#etatCapture'), lab = $('label[for=fichiers]');
+  if (!files.length || !st) return;
+  if (!cfg.gemini) { st.innerHTML = 'Ajoute d\'abord ta clé Gemini dans les <a href="#/reglages">réglages</a>.'; return; }
+  st.textContent = `Lecture ${files.length > 1 ? 'des ' + files.length + ' captures' : 'de la capture'} en cours, 10 à 30 secondes…`;
+  lab.classList.add('occupe');
+  try {
+    const x = await extraireRecette(files);
+    const f = $('#f'); if (!f) return;
+    const mettre = (n, v) => {
+      if (v == null || v === '' || (Array.isArray(v) && !v.length)) return;
+      f.elements[n].value = Array.isArray(v) ? v.join(n === 'tags' ? ', ' : '\n') : v;
+    };
+    ['titre', 'portions', 'tempsPrep', 'tempsCuisson', 'ingredients', 'etapes', 'tags', 'source'].forEach(n => mettre(n, x[n]));
+    st.textContent = 'Recette pré-remplie : relis-la puis enregistre.';
+  } catch (e) {
+    st.textContent = e.message || 'La lecture a échoué, réessaie.';
+  } finally {
+    lab.classList.remove('occupe');
+  }
+}
+async function chargerPartage() {
+  try {
+    const c = await caches.open('partage');
+    const ks = await c.keys(); const fs = [];
+    for (const k of ks) { const r = await c.match(k); const b = await r.blob(); fs.push(new File([b], 'capture.jpg', { type: b.type })); await c.delete(k); }
+    if (fs.length) fichiersPartages = fs;
+  } catch (e) {}
+}
+
+/* ---------- Navigation ---------- */
+function retour() { if (navInterne) history.back(); else location.replace('#/'); }
+function rendre() {
+  const [v, id] = (location.hash.slice(1) || '/').split('/').filter(Boolean);
+  if (v !== 'cuisine' && document.body.classList.contains('mode-cuisine')) { document.body.classList.remove('mode-cuisine'); lacherEcran(); }
+  $('#app').dataset.titre = '';
+  if (!v) vueListe();
+  else if (v === 'r') vueRecette(id);
+  else if (v === 'edit') vueEdition(id);
+  else if (v === 'nouvelle') vueEdition(null);
+  else if (v === 'cuisine') vueCuisine(id);
+  else if (v === 'reglages') vueReglages();
+  else vueListe();
+}
+window.addEventListener('hashchange', () => {
+  navInterne = true;
+  rendre();
+  if (!location.hash.slice(1).replace('/', '')) window.scrollTo(0, scrollListe); else window.scrollTo(0, 0);
+});
+window.addEventListener('scroll', () => { if (!location.hash.slice(1).replace('/', '')) scrollListe = window.scrollY; }, { passive: true });
+
+/* ---------- Vue : liste ---------- */
+function vueListe() {
+  const tags = [...new Set(data.recettes.flatMap(r => r.tags || []))].sort((a, b) => a.localeCompare(b, 'fr'));
+  if (filtre.tag && !tags.includes(filtre.tag)) filtre.tag = null;
+  $('#app').innerHTML = `
+    <header class="barre"><h1 class="esp">Mes recettes</h1><a class="icone" href="#/reglages" aria-label="Réglages">⚙︎</a></header>
+    <p class="etat" id="etat"></p>
+    ${data.recettes.length ? `<input class="recherche" type="search" id="q" placeholder="Chercher un plat ou des ingrédients" value="${esc(filtre.q)}" autocomplete="off" enterkeyhint="search">` : ''}
+    ${tags.length ? `<div class="puces" role="group" aria-label="Filtrer par étiquette">${tags.map(t => `<button class="puce" data-tag="${esc(t)}" aria-pressed="${filtre.tag === t}">${esc(t)}</button>`).join('')}</div>` : ''}
+    <div id="res"></div>
+    <a class="btn ajouter" href="#/nouvelle">+ Ajouter une recette</a>`;
+  majEtat(); majListe();
+  $('#q')?.addEventListener('input', e => { filtre.q = e.target.value; majListe(); });
+  document.querySelectorAll('.puce[data-tag]').forEach(b => b.addEventListener('click', () => {
+    filtre.tag = filtre.tag === b.dataset.tag ? null : b.dataset.tag;
+    document.querySelectorAll('.puce[data-tag]').forEach(x => x.setAttribute('aria-pressed', x.dataset.tag === filtre.tag));
+    majListe();
+  }));
+}
+function majListe() {
+  const res = $('#res'); if (!res) return;
+  if (!data.recettes.length) {
+    res.innerHTML = `<div class="vide"><p>Ton carnet est vide. Ajoute ta première recette à la main, ou à partir de captures d'écran que l'appli lira pour toi.</p></div>`;
+    return;
+  }
+  const mots = norm(filtre.q).split(/\s+/).filter(Boolean);
+  const rs = data.recettes.filter(r => {
+    if (filtre.tag && !(r.tags || []).includes(filtre.tag)) return false;
+    if (!mots.length) return true;
+    const tout = norm([r.titre, ...(r.ingredients || []), ...(r.tags || [])].join(' '));
+    return mots.every(m => tout.includes(m));
+  }).sort((a, b) => a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' }));
+  if (!rs.length) { res.innerHTML = `<div class="vide"><p>Aucune recette ne correspond${filtre.q ? ' à « ' + esc(filtre.q) + ' »' : ''}.</p></div>`; return; }
+  const groupes = !mots.length && !filtre.tag;
+  let html = '', lettre = null;
+  for (const r of rs) {
+    const L = norm(r.titre).charAt(0).toUpperCase();
+    if (groupes && L !== lettre) { html += (lettre !== null ? '</ul>' : '') + `<h2 class="lettre">${esc(/[A-Z]/.test(L) ? L : '#')}</h2><ul class="liste">`; lettre = L; }
+    else if (!groupes && lettre === null) { html += '<ul class="liste">'; lettre = ''; }
+    const t = (r.tempsPrep || 0) + (r.tempsCuisson || 0);
+    const meta = [t ? duree(t) : '', r.portions ? r.portions + ' pers.' : '', (r.tags || []).join(', ')].filter(Boolean).join(', ');
+    html += `<li><a href="#/r/${r.id}"><div class="t">${esc(r.titre)}</div>${meta ? `<div class="meta">${esc(meta)}</div>` : ''}</a></li>`;
+  }
+  res.innerHTML = html + '</ul>';
+}
+
+/* ---------- Vue : fiche recette ---------- */
+function vueRecette(id) {
+  const r = recette(id);
+  if (!r) { location.replace('#/'); return; }
+  $('#app').dataset.titre = r.titre;
+  const p = portionsVues[id] ?? r.portions;
+  const ratio = ratioDe(r);
+  const temps = [r.tempsPrep ? 'préparation ' + duree(r.tempsPrep) : '', r.tempsCuisson ? 'cuisson ' + duree(r.tempsCuisson) : ''].filter(Boolean).join(', ');
+  const src = r.source ? (/^https?:\/\//i.test(r.source)
+    ? `<a href="${esc(r.source)}" target="_blank" rel="noopener">${esc(new URL(r.source).hostname.replace(/^www\./, ''))}</a>` : esc(r.source)) : '';
+  const notes = [...(r.notes || [])].sort((a, b) => b.date - a.date);
+  $('#app').innerHTML = `
+    <header class="barre"><button class="icone" id="retour" aria-label="Retour">←</button><span class="esp"></span>
+      <a class="btn second petit" href="#/edit/${r.id}">Modifier</a></header>
+    <h1>${esc(r.titre)}</h1>
+    ${temps ? `<p class="meta">${esc(temps.charAt(0).toUpperCase() + temps.slice(1))}</p>` : ''}
+    ${(r.tags || []).length ? `<div class="tags">${r.tags.map(t => `<button class="puce" data-voir-tag="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}
+    ${(r.etapes || []).length ? `<a class="btn large" href="#/cuisine/${r.id}">Cuisiner</a>` : ''}
+    <section>
+      <div class="entete-ingr"><h2>Ingrédients</h2>
+        ${r.portions ? `<div class="portions"><button class="icone" data-p="-1" aria-label="Une personne de moins">−</button><span><b>${p}</b> pers.</span><button class="icone" data-p="1" aria-label="Une personne de plus">+</button></div>` : ''}
+      </div>
+      <ul class="ingr">${(r.ingredients || []).map(l => ingrHTML(l, ratio)).join('')}</ul>
+    </section>
+    ${(r.etapes || []).length ? `<section><h2>Préparation</h2><ol class="etapes">${r.etapes.map(e => `<li><span>${etapeHTML(e)}</span></li>`).join('')}</ol></section>` : ''}
+    ${src ? `<p class="meta">Source : ${src}</p>` : ''}
+    <section>
+      <h2>Mes notes</h2>
+      ${notes.length ? `<ul class="notes">${notes.map(n => `<li><div class="esp"><span class="d">${new Date(n.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span><p>${esc(n.texte)}</p></div><button class="icone" data-suppr-note="${n.id}" aria-label="Supprimer la note">✕</button></li>`).join('')}</ul>` : ''}
+      <textarea id="note" rows="2" placeholder="Une variante, ce que tu changerais la prochaine fois…"></textarea>
+      <button class="btn second" id="ajNote">Ajouter la note</button>
+    </section>`;
+  $('#retour').onclick = retour;
+  document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => {
+    portionsVues[id] = Math.max(1, (portionsVues[id] ?? r.portions) + +b.dataset.p);
+    const y = window.scrollY; vueRecette(id); window.scrollTo(0, y);
+  });
+  document.querySelectorAll('[data-voir-tag]').forEach(b => b.onclick = () => { filtre = { q: '', tag: b.dataset.voirTag }; location.hash = '#/'; });
+  $('#ajNote').onclick = () => {
+    const t = $('#note').value.trim(); if (!t) { $('#note').focus(); return; }
+    r.notes = [...(r.notes || []), { id: uid(), date: Date.now(), texte: t }];
+    enregistrer(r); const y = window.scrollY; vueRecette(id); window.scrollTo(0, y); toast('Note ajoutée');
+  };
+  document.querySelectorAll('[data-suppr-note]').forEach(b => b.onclick = () => {
+    if (!confirm('Supprimer cette note ?')) return;
+    r.notes = (r.notes || []).filter(n => n.id !== b.dataset.supprNote);
+    enregistrer(r); const y = window.scrollY; vueRecette(id); window.scrollTo(0, y);
+  });
+}
+
+/* ---------- Vue : ajout et modification ---------- */
+function vueEdition(id) {
+  const r = id ? recette(id) : null;
+  if (id && !r) { location.replace('#/'); return; }
+  const v = r || { titre: '', portions: 4, tempsPrep: null, tempsCuisson: null, ingredients: [], etapes: [], tags: [], source: '' };
+  $('#app').innerHTML = `
+    <header class="barre"><button class="icone" id="annuler" aria-label="Annuler">✕</button><h1 class="esp" style="font-size:1.6rem">${r ? 'Modifier la recette' : 'Nouvelle recette'}</h1></header>
+    <div class="capture">
+      <label class="btn second" for="fichiers">Pré-remplir avec des captures d'écran</label>
+      <input type="file" id="fichiers" accept="image/*" multiple hidden>
+      <p class="meta" id="etatCapture">Tu peux en choisir plusieurs pour une même recette.</p>
+    </div>
+    <form id="f" novalidate>
+      <label>Titre<input name="titre" autocomplete="off"></label>
+      <div class="ligne3">
+        <label>Personnes<input name="portions" type="number" inputmode="numeric" min="1"></label>
+        <label>Préparation (min)<input name="tempsPrep" type="number" inputmode="numeric" min="0"></label>
+        <label>Cuisson (min)<input name="tempsCuisson" type="number" inputmode="numeric" min="0"></label>
+      </div>
+      <label>Ingrédients <span class="aide">un par ligne, quantité en premier</span>
+        <textarea name="ingredients" rows="8" placeholder="200 g de farine&#10;3 oeufs&#10;Pour la sauce :&#10;20 cl de crème"></textarea></label>
+      <label>Étapes <span class="aide">une par ligne</span><textarea name="etapes" rows="8" placeholder="Préchauffer le four à 180 °C.&#10;Enfourner 25 min."></textarea></label>
+      <label>Étiquettes <span class="aide">séparées par des virgules</span><input name="tags" placeholder="plat, poulet, rapide" autocomplete="off"></label>
+      <label>Source<input name="source" placeholder="Lien, livre, compte Instagram…" autocomplete="off"></label>
+      <div class="actions">
+        <button class="btn" type="submit">Enregistrer la recette</button>
+        ${r ? '<button class="btn danger" type="button" id="suppr">Supprimer</button>' : ''}
+      </div>
+    </form>`;
+  const f = $('#f');
+  f.elements.titre.value = v.titre || '';
+  f.elements.portions.value = v.portions ?? '';
+  f.elements.tempsPrep.value = v.tempsPrep ?? '';
+  f.elements.tempsCuisson.value = v.tempsCuisson ?? '';
+  f.elements.ingredients.value = (v.ingredients || []).join('\n');
+  f.elements.etapes.value = (v.etapes || []).join('\n');
+  f.elements.tags.value = (v.tags || []).join(', ');
+  f.elements.source.value = v.source || '';
+  $('#annuler').onclick = retour;
+  $('#fichiers').onchange = e => { preRemplir([...e.target.files]); e.target.value = ''; };
+  f.onsubmit = e => {
+    e.preventDefault();
+    const el = f.elements;
+    const titre = el.titre.value.trim();
+    if (!titre) { toast('Donne un titre à la recette'); el.titre.focus(); return; }
+    const lignes = s => s.split('\n').map(x => x.trim()).filter(Boolean);
+    const nombre = s => { const n = parseInt(s, 10); return isNaN(n) || n < 0 ? null : n; };
+    const neuve = Object.assign({}, r || { id: uid(), creeLe: Date.now(), notes: [] }, {
+      titre, portions: nombre(el.portions.value) || null, tempsPrep: nombre(el.tempsPrep.value), tempsCuisson: nombre(el.tempsCuisson.value),
+      ingredients: lignes(el.ingredients.value), etapes: lignes(el.etapes.value),
+      tags: [...new Set(el.tags.value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean))],
+      source: el.source.value.trim()
+    });
+    delete portionsVues[neuve.id];
+    enregistrer(neuve);
+    toast('Recette enregistrée');
+    if (r) retour(); else location.replace('#/r/' + neuve.id);
+  };
+  $('#suppr')?.addEventListener('click', () => {
+    if (!confirm(`Supprimer « ${r.titre} » ?`)) return;
+    data.recettes = data.recettes.filter(x => x.id !== r.id);
+    data.supprimes = [...(data.supprimes || []), r.id];
+    sauverLocal(); synchro();
+    toast('Recette supprimée');
+    location.replace('#/');
+  });
+  if (fichiersPartages) { const fs = fichiersPartages; fichiersPartages = null; preRemplir(fs); }
+}
+
+/* ---------- Vue : mode cuisine ---------- */
+function vueCuisine(id) {
+  const r = recette(id);
+  if (!r || !(r.etapes || []).length) { location.replace(r ? '#/r/' + id : '#/'); return; }
+  $('#app').dataset.titre = r.titre;
+  if (!document.body.classList.contains('mode-cuisine')) { document.body.classList.add('mode-cuisine'); garderEcran(); }
+  const n = r.etapes.length;
+  const i = Math.min(etapeVue[id] || 0, n - 1);
+  const p = portionsVues[id] ?? r.portions;
+  const coches = cochesVue[id] || (cochesVue[id] = new Set());
+  const ingr = (r.ingredients || []).map((l, k) => ingrHTML(l, ratioDe(r)).replace('<li', `<li data-k="${k}"${coches.has(k) ? ' class="coche"' : ''}`)).join('');
+  $('#app').innerHTML = `
+    <div class="cuisine">
+      <header class="barre"><button class="icone" id="quitter" aria-label="Quitter le mode cuisine">✕</button>
+        <span class="esp prog">Étape ${i + 1} sur ${n}</span>
+        <button class="btn second petit" id="voirIngr">Ingrédients</button></header>
+      <div class="segments" aria-hidden="true">${r.etapes.map((_, k) => `<i class="${k <= i ? 'fait' : ''}"></i>`).join('')}</div>
+      <div class="scene" id="scene"><div class="num">${i + 1}</div><p class="grand">${etapeHTML(r.etapes[i])}</p></div>
+      <nav class="nav-cuisine">
+        <button class="btn second" id="prec" ${i === 0 ? 'disabled' : ''}>Précédente</button>
+        <button class="btn" id="suiv">${i === n - 1 ? 'Terminer' : 'Suivante'}</button>
+      </nav>
+      <div class="tiroir" id="tiroir" hidden>
+        <div class="barre"><h2 class="esp">Ingrédients${p ? ' pour ' + p + ' pers.' : ''}</h2><button class="icone" id="fermer" aria-label="Fermer">✕</button></div>
+        <p class="meta" style="margin:0 0 6px">Touche un ingrédient pour le cocher.</p>
+        <ul class="ingr">${ingr}</ul>
+      </div>
+    </div>`;
+  const aller = k => { etapeVue[id] = k; vueCuisine(id); };
+  $('#quitter').onclick = retour;
+  $('#prec').onclick = () => i > 0 && aller(i - 1);
+  $('#suiv').onclick = () => {
+    if (i < n - 1) return aller(i + 1);
+    etapeVue[id] = 0; retour();
+    setTimeout(() => toast('Bon appétit ! Une note pour la prochaine fois ?', 3500), 150);
+  };
+  $('#voirIngr').onclick = () => { $('#tiroir').hidden = false; };
+  $('#fermer').onclick = () => { $('#tiroir').hidden = true; };
+  $('#tiroir').onclick = e => {
+    const li = e.target.closest('li[data-k]'); if (!li) return;
+    const k = +li.dataset.k; coches.has(k) ? coches.delete(k) : coches.add(k); li.classList.toggle('coche');
+  };
+  let x0 = null;
+  const sc = $('#scene');
+  sc.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  sc.addEventListener('touchend', e => {
+    if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (dx < -70 && i < n - 1) aller(i + 1); else if (dx > 70 && i > 0) aller(i - 1);
+  }, { passive: true });
+}
+
+/* ---------- Vue : réglages ---------- */
+function vueReglages() {
+  $('#app').innerHTML = `
+    <header class="barre"><button class="icone" id="retour" aria-label="Retour">←</button><h1 class="esp">Réglages</h1></header>
+    <form id="fr" novalidate>
+      <h2>Sauvegarde sur GitHub</h2>
+      <p class="meta">Tes recettes sont enregistrées dans le fichier recettes.json d'un dépôt privé, et lues par chaque téléphone qui a le jeton.</p>
+      <label>Compte<input name="owner" autocomplete="off" autocapitalize="off"></label>
+      <label>Dépôt privé<input name="repo" autocomplete="off" autocapitalize="off"></label>
+      <label>Jeton d'accès <span class="aide">droit Contents en lecture et écriture</span><input name="token" type="password" autocomplete="off"></label>
+      <h2>Lecture des captures</h2>
+      <p class="meta">Gratuit avec une clé Google AI Studio (aistudio.google.com, menu « Get API key »).</p>
+      <label>Clé API Gemini<input name="gemini" type="password" autocomplete="off"></label>
+      <label>Modèle <span class="aide">à changer seulement si Google le retire</span><input name="modeleGemini" list="modeles" autocomplete="off" autocapitalize="off"></label>
+      <datalist id="modeles"><option value="gemini-flash-latest"><option value="gemini-flash-lite-latest"><option value="gemini-2.5-flash"><option value="gemini-2.5-flash-lite"></datalist>
+      <div class="actions"><button class="btn" type="submit">Enregistrer et synchroniser</button></div>
+    </form>
+    <h2>Mes données</h2>
+    <p class="meta">${data.recettes.length} recette${data.recettes.length > 1 ? 's' : ''} dans le carnet.</p>
+    <div class="actions">
+      <button class="btn second" id="exporter">Exporter en JSON</button>
+      <label class="btn second" style="margin:0;font-size:1rem">Importer un JSON<input type="file" accept="application/json,.json" id="importer" hidden></label>
+    </div>`;
+  const f = $('#fr');
+  for (const k of ['owner', 'repo', 'token', 'gemini', 'modeleGemini']) f.elements[k].value = cfg[k] || '';
+  $('#retour').onclick = retour;
+  f.onsubmit = async e => {
+    e.preventDefault();
+    for (const k of ['owner', 'repo', 'token', 'gemini', 'modeleGemini']) cfg[k] = f.elements[k].value.trim();
+    LS.set('mijote.cfg', cfg);
+    if (!cfg.token) { toast('Réglages enregistrés'); return; }
+    toast('Synchronisation…');
+    await synchro();
+    toast(etatSynchro || 'Réglages enregistrés', 3500);
+  };
+  $('#exporter').onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
+    a.download = 'recettes-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+  $('#importer').onchange = async e => {
+    const file = e.target.files[0]; if (!file) return;
+    try {
+      const d = JSON.parse(await file.text());
+      if (!Array.isArray(d.recettes)) throw new Error();
+      const avant = data.recettes.length;
+      data = fusion(data, d); sauverLocal(); synchro();
+      toast((data.recettes.length - avant) + ' recette(s) ajoutée(s)'); vueReglages();
+    } catch (err) { toast('Ce fichier ne contient pas de recettes Mijote'); }
+  };
+}
+
+/* ---------- Clics globaux : minuteurs ---------- */
+document.addEventListener('click', e => {
+  const c = e.target.closest('.chrono');
+  if (c) { e.preventDefault(); lancerMinuteur(+c.dataset.s, $('#app').dataset.titre || 'Minuteur'); return; }
+  const m = e.target.closest('.min');
+  if (!m) return;
+  const t = minuteurs.find(x => x.id === m.dataset.id); if (!t) return;
+  if (e.target.closest('[data-plus]')) t.fin += 60000;
+  else if (e.target.closest('[data-stop]')) minuteurs = minuteurs.filter(x => x !== t);
+  else return;
+  sauverMin(); majMinuteurs();
+});
+
+/* ---------- Démarrage ---------- */
+(async () => {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (new URLSearchParams(location.search).has('partage')) {
+    await chargerPartage();
+    history.replaceState(null, '', location.pathname + '#/nouvelle');
+  }
+  minuteurs = minuteurs.filter(t => Date.now() - t.fin < 3600000); sauverMin();
+  majMinuteurs();
+  rendre();
+  synchro();
+  window.addEventListener('online', () => synchro());
+})();
+</script>
+</body>
+</html>
