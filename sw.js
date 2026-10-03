@@ -1,4 +1,4 @@
-const V = 'mijote-v2';
+const V = 'mijote-v3';
 const COQUILLE = ['./', './index.html', './manifest.json', './icone-192.png', './icone-512.png'];
 
 self.addEventListener('install', e => {
